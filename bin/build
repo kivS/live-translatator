@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+set -euo pipefail
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+BUILD_CONFIGURATION=release "$ROOT_DIR/script/build_and_run.sh" --build
+
+DESTINATION="/Applications/RegionTranslate.app"
+if [[ -L "$DESTINATION" ]]; then
+  echo "Refusing to replace a symlink at $DESTINATION." >&2
+  exit 1
+fi
+if [[ -e "$DESTINATION" ]]; then
+  INSTALLED_ID=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$DESTINATION/Contents/Info.plist")
+  if [[ "$INSTALLED_ID" != "local.RegionTranslate" ]]; then
+    echo "A different app already occupies $DESTINATION." >&2
+    exit 1
+  fi
+fi
+
+STAGING_DIR=$(mktemp -d /Applications/.RegionTranslate-install.XXXXXX)
+ditto "$ROOT_DIR/dist/RegionTranslate.app" "$STAGING_DIR/RegionTranslate.app"
+if ! codesign --verify --deep --strict "$STAGING_DIR/RegionTranslate.app"; then
+  echo "Install stopped: the staged app's signature is invalid. The current /Applications copy was not changed." >&2
+  exit 1
+fi
+pkill -x RegionTranslate >/dev/null 2>&1 || true
+if [[ -d "$DESTINATION" ]]; then
+  mv "$DESTINATION" "$STAGING_DIR/Previous-RegionTranslate.app"
+fi
+if ! mv "$STAGING_DIR/RegionTranslate.app" "$DESTINATION"; then
+  if [[ -d "$STAGING_DIR/Previous-RegionTranslate.app" ]]; then
+    mv "$STAGING_DIR/Previous-RegionTranslate.app" "$DESTINATION"
+  fi
+  exit 1
+fi
+echo "Installed $DESTINATION"
+if [[ -d "$STAGING_DIR/Previous-RegionTranslate.app" ]]; then
+  echo "Previous version retained at $STAGING_DIR/Previous-RegionTranslate.app"
+else
+  rmdir "$STAGING_DIR"
+fi
+/usr/bin/open "$DESTINATION"
