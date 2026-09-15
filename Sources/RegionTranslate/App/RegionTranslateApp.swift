@@ -23,14 +23,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         status.button?.sendAction(on: [.leftMouseUp, .rightMouseUp])
         hotKey = GlobalHotKey { [weak self] in self?.coordinator.begin() }
         if hotKey?.registered == false {
-            coordinator.showError("⌘⇧T is already in use. You can still start a capture from the menu bar icon.")
+            coordinator.showError("⌥⌘T is already in use. You can still start a capture from the menu bar icon.")
         }
     }
 
     @objc private func clicked() {
         if NSApp.currentEvent?.type == .rightMouseUp {
             let menu = NSMenu()
-            menu.addItem(withTitle: "Translate Region  ⌘⇧T", action: #selector(capture), keyEquivalent: "")
+            menu.addItem(withTitle: "Translate Region  ⌥⌘T", action: #selector(capture), keyEquivalent: "")
             menu.addItem(withTitle: "Settings…", action: #selector(settings), keyEquivalent: "")
             menu.addItem(.separator())
             menu.addItem(withTitle: "Quit RegionTranslate", action: #selector(quit), keyEquivalent: "")

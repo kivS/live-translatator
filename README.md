@@ -14,7 +14,7 @@ Open `RegionTranslate.xcodeproj`. Select the **RegionTranslate app target → Si
 
 `bin/dev` builds and launches Debug through Xcode. `bin/build` builds Release, replaces `/Applications/RegionTranslate.app`, and launches it, retaining the previous version in the printed backup folder. Both use the signing settings saved in the project without selecting or overriding your certificate. When migrating from an older signature, remove its Screen Recording entry and grant access to the newly installed app once.
 
-1. Click the viewfinder menu bar icon or press **⌘⇧T**.
+1. Click the viewfinder menu bar icon or press **⌥⌘T**.
 2. Allow Screen Recording access when prompted. Reopen the app if macOS requests it.
 3. Drag with your mouse or trackpad to select a region. Drag inside to move it, or drag a corner to resize it.
 4. Click **Translate**, press **Space**, or press **Return**. **Esc** cancels.

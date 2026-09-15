@@ -11,7 +11,7 @@ struct SettingsView: View {
             Text("Use an API base URL ending in /v1. Images are sent to this address only after you confirm a selection.")
                 .font(.caption).foregroundStyle(.secondary)
             Divider()
-            Text("Capture: ⌘⇧T or click the menu bar icon")
+            Text("Capture: ⌥⌘T or click the menu bar icon")
             Text("Drag to select. Drag inside to move. Drag a corner to resize. Space, Return, or Translate confirms; Esc cancels.")
             Text("Your llama server must load the matching vision projector (mmproj) to read screenshots.")
                 .font(.caption).foregroundStyle(.secondary)

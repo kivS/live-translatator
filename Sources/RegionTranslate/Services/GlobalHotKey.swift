@@ -16,7 +16,7 @@ final class GlobalHotKey {
             return noErr
         }, 1, &event, Unmanaged.passUnretained(self).toOpaque(), &handler)
         let id = EventHotKeyID(signature: 0x5254524E, id: 1)
-        RegisterEventHotKey(UInt32(kVK_ANSI_T), UInt32(cmdKey | shiftKey), id, GetApplicationEventTarget(), 0, &reference)
+        RegisterEventHotKey(UInt32(kVK_ANSI_T), UInt32(cmdKey | optionKey), id, GetApplicationEventTarget(), 0, &reference)
     }
     deinit {
         if let reference { UnregisterEventHotKey(reference) }
