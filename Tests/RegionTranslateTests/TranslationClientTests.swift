@@ -18,6 +18,14 @@ final class TranslationClientTests: XCTestCase {
         XCTAssertThrowsError(try TranslationClient.request(image: Data(), endpoint: "file:///tmp/server", model: "test"))
     }
 
+    func testLoadModelRequestUsesRouterEndpoint() throws {
+        let request = try TranslationClient.loadModelRequest(endpoint: "http://localhost:8080/v1", model: "test-model")
+        XCTAssertEqual(request.url?.absoluteString, "http://localhost:8080/models/load")
+        XCTAssertEqual(request.httpMethod, "POST")
+        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: XCTUnwrap(request.httpBody)) as? [String: String])
+        XCTAssertEqual(json["model"], "test-model")
+    }
+
     func testReasoningOnlyAtLimitHasActionableError() {
         let data = Data(#"{"choices":[{"message":{"content":"","reasoning_content":"unfinished"},"finish_reason":"length"}]}"#.utf8)
         XCTAssertThrowsError(try TranslationClient.translation(from: data)) { error in

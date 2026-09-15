@@ -8,9 +8,7 @@ struct TranslationClient {
     }
 
     static func request(image: Data, endpoint: String, model: String, recognizedText: String = "") throws -> URLRequest {
-        guard let base = URL(string: endpoint), ["http", "https"].contains(base.scheme ?? ""), base.host != nil else {
-            throw Failure.message("Enter a valid HTTP server address in Settings.")
-        }
+        let base = try baseURL(endpoint)
         let url = base.appendingPathComponent("chat/completions")
         var request = URLRequest(url: url, timeoutInterval: 300)
         request.httpMethod = "POST"
@@ -24,6 +22,26 @@ struct TranslationClient {
             ]]]
         ])
         return request
+    }
+
+    static func loadModelRequest(endpoint: String, model: String) throws -> URLRequest {
+        var base = try baseURL(endpoint)
+        if base.lastPathComponent == "v1" {
+            base.deleteLastPathComponent()
+        }
+        var request = URLRequest(url: base.appendingPathComponent("models/load"), timeoutInterval: 300)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try JSONSerialization.data(withJSONObject: ["model": model])
+        return request
+    }
+
+    func loadModel(endpoint: String, model: String) async throws {
+        let request = try Self.loadModelRequest(endpoint: endpoint, model: model)
+        let (_, response) = try await URLSession.shared.data(for: request)
+        guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {
+            throw Failure.message("The server could not preload the model.")
+        }
     }
 
     func translate(image: Data, endpoint: String, model: String) async throws -> String {
@@ -56,5 +74,12 @@ struct TranslationClient {
             throw Failure.message("The model returned an empty response. Retry this image; if it keeps happening, try a smaller region or a different model in Settings.")
         }
         return text + (choice.finish_reason == "length" ? "\n\n[Output limit reached. Try a smaller region.]" : "")
+    }
+
+    private static func baseURL(_ endpoint: String) throws -> URL {
+        guard let base = URL(string: endpoint), ["http", "https"].contains(base.scheme ?? ""), base.host != nil else {
+            throw Failure.message("Enter a valid HTTP server address in Settings.")
+        }
+        return base
     }
 }
