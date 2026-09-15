@@ -23,6 +23,7 @@ final class CaptureCoordinator {
 
     func begin() {
         guard !preparing, overlays.isEmpty else { return }
+        preloadModel()
         guard CGPreflightScreenCaptureAccess() || CGRequestScreenCaptureAccess() else {
             showError("Screen Recording access is not available to this copy of RegionTranslate. In System Settings → Privacy & Security → Screen Recording, remove the old RegionTranslate entry and add /Applications/RegionTranslate.app, then enable it and quit and reopen the app.")
             return
@@ -68,6 +69,14 @@ final class CaptureCoordinator {
                 }
                 NSApp.activate(ignoringOtherApps: true)
             } catch { showError(error.localizedDescription) }
+        }
+    }
+
+    private func preloadModel() {
+        let endpoint = UserDefaults.standard.string(forKey: "endpoint") ?? "http://localhost:8080/v1"
+        let model = UserDefaults.standard.string(forKey: "model") ?? TranslationClient.defaultModel
+        Task {
+            try? await TranslationClient().loadModel(endpoint: endpoint, model: model)
         }
     }
 
